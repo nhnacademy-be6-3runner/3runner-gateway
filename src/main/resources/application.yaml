@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: 3runner-gateway
+server:
+  port: 8080
+
+logging:
+  level:
+    root: debug
+
+eureka:
+  client:
+    fetch-registry: true
+    service-url:
+      defaultZone:
+        http://admin:1234@localhost:8761/eureka,http://admin:1234@localhost:8762/eureka
+  instance:
+    prefer-ip-address: true
