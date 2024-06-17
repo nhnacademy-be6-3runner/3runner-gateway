@@ -15,4 +15,5 @@ public class RouteLocatorConfig {
                 .route("coupon", p -> p.path("/coupon").and().uri("lb://3RUNNER-COUPON"))
                 .build();
     }
+    //
 }
