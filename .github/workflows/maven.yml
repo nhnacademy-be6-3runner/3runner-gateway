@@ -64,11 +64,12 @@ jobs:
           script: |
             ports_to_check=("8080")
             for port in "${ports_to_check[@]}"; do
-              existing_container=$(sudo lsof -i:$port -t)
-              if [ ! -z "$existing_container" ]; then
-                sudo docker stop $existing_container
-                sudo docker rm $existing_container
-              fi
+  # Find container IDs using Docker command instead of lsof
+              existing_containers=$(docker ps --filter "publish=$port" -q)
+              for container in $existing_containers; do
+                sudo docker stop $container
+                sudo docker rm $container
+              done
             done
 
       - name: Deploy to server via SSH
