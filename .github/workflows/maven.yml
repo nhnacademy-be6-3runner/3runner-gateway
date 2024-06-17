@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "."
-          target: "/home/ubuntu/gateway"
+          target: "/home/nhnacademy/gateway"
 
       - name: Stop existing containers on port 80 and 8080
         uses: appleboy/ssh-action@master
@@ -79,7 +79,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /home/ubuntu/gateway
+            cd /home/nhnacademy/gateway
             sudo docker-compose pull
             sudo docker-compose down || true
             sudo docker-compose up -d
