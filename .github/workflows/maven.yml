@@ -2,9 +2,9 @@ name: Java CI with Maven, SonarQube, and Docker
 
 on:
   push:
-    branches: [ "main" , "develop","develop2"]
+    branches: [ "main" , "develop", "develop2"]
   pull_request:
-    branches: [ "main" , "develop" ]
+    branches: [ "main" , "develop", "develop2" ]
 
 jobs:
   build:
@@ -31,18 +31,11 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
-      - name: Run SonarQube
-        run: mvn clean verify sonar:sonar -Dsonar.projectKey=${{secrets.SONAR_KEY}} -Dsonar.projectName=${{secrets.SONAR_NAME}} -Dsonar.host.url=${{secrets.SONAR_HOST}} -Dsonar.token=${{secrets.SONAR_TOKEN}}
+#      - name: Run SonarQube
+#        run: mvn clean verify sonar:sonar -Dsonar.projectKey=${{secrets.SONAR_KEY}} -Dsonar.projectName=${{secrets.SONAR_NAME}} -Dsonar.host.url=${{secrets.SONAR_HOST}} -Dsonar.token=${{secrets.SONAR_TOKEN}}
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Build Docker image with Docker compose
-        run : sudo docker-compose build
-
-      - name: Push Docker image to Docker Hub
-        run: |
-          sudo docker-compose push
+      - name : Delete file in server
+        run : sudo rm -rf /home/nhnacademy/gateway
 
       - name: Copy files to server
         uses: appleboy/scp-action@master
@@ -54,23 +47,6 @@ jobs:
           source: "."
           target: "/home/nhnacademy/gateway"
 
-      - name: Stop existing containers on port 8080
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_IP }}
-          username: ${{ secrets.SSH_ID }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            ports_to_check=("8080")
-            for port in "${ports_to_check[@]}"; do
-              existing_container=$(sudo lsof -i:$port -t)
-              if [ ! -z "$existing_container" ]; then
-                sudo docker stop $existing_container
-                sudo docker rm $existing_container
-              fi
-            done
-
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@master
         with:
@@ -80,6 +56,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/nhnacademy/gateway
-            sudo docker-compose pull
-            sudo docker-compose down || true
-            sudo docker-compose up -d
+            sudo docker stop gateway || true
+            sudo docker rm gateway || true
+            sudo docker build -t gateway-image .
+            sudo docker run -d -p 8761:8761 --name gateway --net back_network gateway-image

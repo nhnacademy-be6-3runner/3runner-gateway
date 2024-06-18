@@ -1,8 +1,8 @@
 FROM eclipse-temurin:21-jre
 
-WORKDIR /app
+WORKDIR /gateway
 
-COPY target/gateway.jar /gateway/gateway.jar
+COPY ./target/gateway.jar /gateway/gateway.jar
 
 EXPOSE 8080
 
