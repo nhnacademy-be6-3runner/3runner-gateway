@@ -59,4 +59,4 @@ jobs:
             sudo docker stop gateway || true
             sudo docker rm gateway || true
             sudo docker build -t gateway-image .
-            sudo docker run -d -p 8761:8761 --name gateway --net back_network gateway-image
+            sudo docker run -d -p 8080:8080 --name gateway --net back_network gateway-image
