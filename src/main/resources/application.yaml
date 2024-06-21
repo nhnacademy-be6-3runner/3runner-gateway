@@ -1,6 +1,21 @@
 spring:
   application:
     name: 3runner-gateway
+  jwt:
+    secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
+  cloud:
+    gateway:
+      routes:
+        - id: bookstore
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore
+          filters:
+            - AuthorizationFilter
+        - id: coupon
+          uri: lb://3RUNNER-COUPON
+          predicates:
+            - Path=/coupon
 
 logging:
   level:
@@ -11,6 +26,6 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
+        http://admin:1234@localhost:8761/eureka,http://admin:1234@localhost:8762/eureka
   instance:
     prefer-ip-address: true
