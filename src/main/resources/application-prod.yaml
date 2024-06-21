@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+eureka:
+  client:
+    fetch-registry: true
+    service-url:
+      defaultZone:
+        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
+  instance:
+    prefer-ip-address: true
+
+
