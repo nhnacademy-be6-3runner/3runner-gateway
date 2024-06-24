@@ -18,16 +18,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+/**
+ * Front 서버로부터 넘어온 JWT를 검증한다.
+ * 토큰 내의 멤버 아이디 정보를 헤더에 추가해주는 필터.
+ *
+ * @author 오연수
+ */
 @Component
 @Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
 	@Autowired
 	private JWTUtil jwtUtil;
 
+	/**
+	 * Instantiates a new Authorization filter.
+	 */
 	public AuthorizationFilter() {
 		super(Config.class);
 	}
 
+	/**
+	 * The type Config.
+	 */
 	@RequiredArgsConstructor
 	public static class Config {
 		private final JWTUtil jwtUtils;

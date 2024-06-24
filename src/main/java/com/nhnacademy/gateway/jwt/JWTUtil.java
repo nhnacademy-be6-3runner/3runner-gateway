@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
 
+/**
+ * JWT Utility Class
+ *
+ * @author 오연수
+ */
 @Component
 public class JWTUtil {
 	private SecretKey secretKey;
@@ -21,6 +26,12 @@ public class JWTUtil {
 			Jwts.SIG.HS256.key().build().getAlgorithm());
 	}
 
+	/**
+	 * JWT 에서 Email 정보를 가져온다.
+	 *
+	 * @param token access token
+	 * @return email
+	 */
 	public String getUsername(String token) {
 		return Jwts.parser()
 			.verifyWith(secretKey)
@@ -30,6 +41,12 @@ public class JWTUtil {
 			.get("username", String.class);
 	}
 
+	/**
+	 * JWT 에서 멤버의 권한을 가져온다.
+	 *
+	 * @param token access token
+	 * @return auth
+	 */
 	public String getAuth(String token) {
 		return Jwts.parser()
 			.verifyWith(secretKey)
@@ -39,6 +56,12 @@ public class JWTUtil {
 			.get("auth", String.class);
 	}
 
+	/**
+	 * JWT 에서 멤버의 Id를 가져온다.
+	 *
+	 * @param token access token
+	 * @return the member id
+	 */
 	public Long getMemberId(String token) {
 		return Jwts.parser()
 			.verifyWith(secretKey)
@@ -48,6 +71,12 @@ public class JWTUtil {
 			.get("memberId", Long.class);
 	}
 
+	/**
+	 * JWT 유효 기간(만료 기간) 체크한다.
+	 *
+	 * @param token access token
+	 * @return 유효성
+	 */
 	public Boolean isExpired(String token) {
 
 		return Jwts.parser()
