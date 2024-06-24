@@ -1,7 +1,10 @@
 package com.nhnacademy.gateway.jwt;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -47,13 +50,16 @@ public class JWTUtil {
 	 * @param token access token
 	 * @return auth
 	 */
-	public String getAuth(String token) {
-		return Jwts.parser()
+	public List<String> getAuth(String token) {
+		String authoritiesString = Jwts.parser()
 			.verifyWith(secretKey)
 			.build()
 			.parseSignedClaims(token)
 			.getPayload()
 			.get("auth", String.class);
+
+		return Arrays.stream(authoritiesString.split(","))
+			.collect(Collectors.toList());
 	}
 
 	/**

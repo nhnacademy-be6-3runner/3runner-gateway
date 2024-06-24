@@ -1,5 +1,6 @@
 package com.nhnacademy.gateway.filter;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +91,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 	private boolean isJwtValid(String token) {
 		String username = jwtUtil.getUsername(token);
-		String auth = jwtUtil.getAuth(token);
+		List<String> auth = jwtUtil.getAuth(token);
 
 		if (Objects.isNull(username) || username.isEmpty()) {
 			return false;
