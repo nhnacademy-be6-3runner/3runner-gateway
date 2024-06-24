@@ -39,6 +39,15 @@ public class JWTUtil {
 			.get("auth", String.class);
 	}
 
+	public Long getMemberId(String token) {
+		return Jwts.parser()
+			.verifyWith(secretKey)
+			.build()
+			.parseSignedClaims(token)
+			.getPayload()
+			.get("memberId", Long.class);
+	}
+
 	public Boolean isExpired(String token) {
 
 		return Jwts.parser()

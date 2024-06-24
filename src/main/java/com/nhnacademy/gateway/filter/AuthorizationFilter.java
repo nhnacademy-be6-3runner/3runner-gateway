@@ -60,7 +60,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			headers.addAll(request.getHeaders());
 
 			headers.remove(HttpHeaders.AUTHORIZATION);
-			headers.add("Member-Id", jwtUtil.getUsername(token));
+			headers.add("Member-Id", String.valueOf(jwtUtil.getMemberId(token)));
 
 			ServerHttpRequest modifiedRequest = request.mutate()
 				.headers(httpHeaders -> httpHeaders.addAll(headers))
