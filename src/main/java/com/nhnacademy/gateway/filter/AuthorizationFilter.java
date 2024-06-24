@@ -28,19 +28,14 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
-	@Autowired
 	private JWTUtil jwtUtil;
 
-	/**
-	 * Instantiates a new Authorization filter.
-	 */
-	public AuthorizationFilter() {
+	@Autowired
+	public AuthorizationFilter(JWTUtil jwtUtil) {
 		super(Config.class);
+		this.jwtUtil = jwtUtil;
 	}
 
-	/**
-	 * The type Config.
-	 */
 	@RequiredArgsConstructor
 	public static class Config {
 		private final JWTUtil jwtUtils;
