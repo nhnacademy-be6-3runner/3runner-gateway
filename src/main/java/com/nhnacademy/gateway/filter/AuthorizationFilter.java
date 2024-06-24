@@ -1,7 +1,7 @@
 package com.nhnacademy.gateway.filter;
 
-import com.nhnacademy.gateway.jwt.JWTUtil;
-import lombok.RequiredArgsConstructor;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -11,66 +11,86 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.nhnacademy.gateway.jwt.JWTUtil;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
-
 @Component
+@Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
-    @Autowired
-    private JWTUtil jwtUtil;
+	@Autowired
+	private JWTUtil jwtUtil;
 
-    public AuthorizationFilter() {
-        super(Config.class);
-    }
+	public AuthorizationFilter() {
+		super(Config.class);
+	}
 
-    @RequiredArgsConstructor
-    public static class Config {
-        private final JWTUtil jwtUtils;
-    }
+	@RequiredArgsConstructor
+	public static class Config {
+		private final JWTUtil jwtUtils;
+	}
 
-    @Override
-    public GatewayFilter apply(AuthorizationFilter.Config config) {
-        return ((exchange, chain) -> {
-            ServerHttpRequest request = exchange.getRequest();
+	@Override
+	public GatewayFilter apply(AuthorizationFilter.Config config) {
+		return ((exchange, chain) -> {
+			ServerHttpRequest request = exchange.getRequest();
 
-            if (!request.getHeaders().containsKey("Authorization")) {
-                return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
-            }
+			if (request.getURI().getPath().startsWith("/bookstore/login")) {
+				return chain.filter(exchange);
+			}
 
-            String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
-            String token = authorization.split(" ")[1];
+			if (!request.getHeaders().containsKey("Authorization")) {
+				log.error("Authorization header not present");
+				return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
+			}
 
-            if (!isJwtValid(token)) {
-                return onError(exchange, "JWT가 유효하지 않다", HttpStatus.UNAUTHORIZED);
-            }
+			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
+			String token = authorization.split(" ")[1];
 
-            return chain.filter(exchange);
-        });
-    }
+			if (!isJwtValid(token)) {
+				log.error("JWT is not valid");
+				return onError(exchange, "JWT가 유효하지 않다", HttpStatus.UNAUTHORIZED);
+			}
 
-    private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(httpStatus);
+			// 넘어가는 요청에 대해 Member-Id Header 추가
+			HttpHeaders headers = new HttpHeaders();
+			headers.addAll(request.getHeaders());
 
-        return response.setComplete();
-    }
+			headers.remove(HttpHeaders.AUTHORIZATION);
+			headers.add("Member-Id", jwtUtil.getUsername(token));
 
-    private boolean isJwtValid(String token) {
-        String username = jwtUtil.getUsername(token);
-        String auth = jwtUtil.getAuth(token);
+			ServerHttpRequest modifiedRequest = request.mutate()
+				.headers(httpHeaders -> httpHeaders.addAll(headers))
+				.build();
+			return chain.filter(exchange.mutate().request(modifiedRequest).build());
+		});
+	}
 
-        if (Objects.isNull(username) || username.isEmpty()) {
-            return false;
-        }
-        if (Objects.isNull(auth) || auth.isEmpty()) {
-            return false;
-        }
-        if (jwtUtil.isExpired(token)) {
-            return false;
-        }
+	private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
+		ServerHttpResponse response = exchange.getResponse();
+		response.setStatusCode(httpStatus);
 
-        return true;
-    }
+		return response.setComplete();
+	}
+
+	private boolean isJwtValid(String token) {
+		String username = jwtUtil.getUsername(token);
+		String auth = jwtUtil.getAuth(token);
+
+		if (Objects.isNull(username) || username.isEmpty()) {
+			return false;
+		}
+		if (Objects.isNull(auth) || auth.isEmpty()) {
+			return false;
+		}
+		if (jwtUtil.isExpired(token)) {
+			return false;
+		}
+
+		return true;
+	}
 
 }

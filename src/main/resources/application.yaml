@@ -6,16 +6,23 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: auth
+          uri:
+            lb://3RUNNER-AUTH
+          predicates:
+            - Path=/auth/**
+
         - id: bookstore
           uri: lb://3RUNNER-BOOKSTORE
           predicates:
-            - Path=/bookstore
+            - Path=/bookstore/**
           filters:
             - AuthorizationFilter
         - id: coupon
           uri: lb://3RUNNER-COUPON
           predicates:
-            - Path=/coupon
+            - Path=/coupon/**
+
 
 logging:
   level:
