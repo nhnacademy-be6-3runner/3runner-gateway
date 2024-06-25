@@ -1,11 +1,14 @@
 package com.nhnacademy.gateway.filter;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -13,6 +16,9 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.gateway.TokenDetails;
 import com.nhnacademy.gateway.jwt.JWTUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 /**
- * Front 서버로부터 넘어온 JWT를 검증한다.
+ * Front 서버로부터 넘어온 JWT 를 검증한다.
  * 토큰 내의 멤버 아이디 정보를 헤더에 추가해주는 필터.
  *
  * @author 오연수
@@ -28,12 +34,18 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
+	private final String TOKEN_DETAILS = "token_details";
+
+	private final RedisTemplate<String, Objects> redisTemplate;
 	private JWTUtil jwtUtil;
+	private ObjectMapper objectMapper;
 
 	@Autowired
-	public AuthorizationFilter(JWTUtil jwtUtil) {
+	public AuthorizationFilter(JWTUtil jwtUtil, @Qualifier("redisTemplate") RedisTemplate redisTemplate, ObjectMapper objectMapper) {
 		super(Config.class);
 		this.jwtUtil = jwtUtil;
+		this.redisTemplate = redisTemplate;
+		this.objectMapper = objectMapper;
 	}
 
 	@RequiredArgsConstructor
@@ -46,7 +58,23 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		return ((exchange, chain) -> {
 			ServerHttpRequest request = exchange.getRequest();
 
-			if (request.getURI().getPath().startsWith("/bookstore/login")) {
+
+			// login 요청 시 access token 검증
+			if (request.getURI().getPath().startsWith("/bookstore/login") || request.getURI().getPath().startsWith("/auth/login")) {
+				if (request.getHeaders().containsKey("Authorization")) {
+					String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
+					String token = authorization.split(" ")[1];
+
+					String uuid = jwtUtil.getUuid(token);
+					Boolean hasUuid = redisTemplate.opsForHash().hasKey(TOKEN_DETAILS, uuid);
+					if (hasUuid && isJwtValid(token)) {
+						return handleRedirect(exchange);
+					}
+				}
+				return chain.filter(exchange);
+			}
+
+			if (request.getURI().getPath().startsWith("/auth")) {
 				return chain.filter(exchange);
 			}
 
@@ -64,11 +92,24 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			}
 
 			// 넘어가는 요청에 대해 Member-Id Header 추가
+			String uuid = jwtUtil.getUuid(token);
+			String data = (String)redisTemplate.opsForHash().get(TOKEN_DETAILS, uuid);
+			TokenDetails tokenDetails = null;
+			try {
+				tokenDetails = objectMapper.readValue(data, TokenDetails.class);
+			} catch (JsonProcessingException e) {
+				throw new RuntimeException(e);
+			}
+			if (tokenDetails == null) {
+				System.out.println("TokenDetails not found in Redis for UUID: " + uuid);
+			} else {
+				System.out.println("TokenDetails retrieved: " + tokenDetails.toString());
+			}
 			HttpHeaders headers = new HttpHeaders();
 			headers.addAll(request.getHeaders());
 
 			headers.remove(HttpHeaders.AUTHORIZATION);
-			headers.add("Member-Id", String.valueOf(jwtUtil.getMemberId(token)));
+			headers.add("Member-Id", String.valueOf(tokenDetails.getMemberId()));
 
 			ServerHttpRequest modifiedRequest = request.mutate()
 				.headers(httpHeaders -> httpHeaders.addAll(headers))
@@ -84,16 +125,25 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		return response.setComplete();
 	}
 
-	private boolean isJwtValid(String token) {
-		String username = jwtUtil.getUsername(token);
-		List<String> auth = jwtUtil.getAuth(token);
+	private Mono<Void> handleRedirect(ServerWebExchange exchange) {
+		// TODO main 페이지 구현 시 리다이렉트 url 변경
+		String redirectUrl = "http://login";
 
-		if (Objects.isNull(username) || username.isEmpty()) {
+		ServerHttpResponse response = exchange.getResponse();
+		response.setStatusCode(HttpStatus.FOUND);
+		response.getHeaders().setLocation(URI.create(redirectUrl));
+
+		return response.setComplete();
+	}
+
+
+	private boolean isJwtValid(String token) {
+		String uuid = jwtUtil.getUuid(token);
+
+		if (Objects.isNull(uuid) || uuid.isEmpty()) {
 			return false;
 		}
-		if (Objects.isNull(auth) || auth.isEmpty()) {
-			return false;
-		}
+
 		if (jwtUtil.isExpired(token)) {
 			return false;
 		}
