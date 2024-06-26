@@ -60,3 +60,4 @@
 #            sudo docker rm gateway || true
 #            sudo docker build -t gateway-image .
 #            sudo docker run -d -p 8080:8080 --name gateway --net back_network, front_network gateway-image
+##
