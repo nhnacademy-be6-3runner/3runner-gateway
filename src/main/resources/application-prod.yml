@@ -8,7 +8,7 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@133.186.143.40:8761/eureka,http://admin:1234@133.186.143.40:8762/eureka
+        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
   instance:
     prefer-ip-address: true
 
