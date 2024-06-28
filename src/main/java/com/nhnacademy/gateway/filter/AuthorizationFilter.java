@@ -58,23 +58,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		return ((exchange, chain) -> {
 			ServerHttpRequest request = exchange.getRequest();
 
-
-			// login 요청 시 access token 검증
-			if (request.getURI().getPath().startsWith("/bookstore/login") || request.getURI().getPath().startsWith("/auth/login")) {
-				if (request.getHeaders().containsKey("Authorization")) {
-					String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
-					String token = authorization.split(" ")[1];
-
-					String uuid = jwtUtil.getUuid(token);
-					Boolean hasUuid = redisTemplate.opsForHash().hasKey(TOKEN_DETAILS, uuid);
-					if (hasUuid && isJwtValid(token)) {
-						return handleRedirect(exchange);
-					}
-				}
-				return chain.filter(exchange);
-			}
-
-			if (request.getURI().getPath().startsWith("/auth")) {
+			// /bookstore/login 은 검증 제외
+			if (request.getURI().getPath().startsWith("/bookstore/login")) {
+				log.warn("bookstore login api 요청");
 				return chain.filter(exchange);
 			}
 
@@ -85,6 +71,23 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
 			String token = authorization.split(" ")[1];
+
+			if (jwtUtil.getCategory(token).equals("refresh")) {
+				log.warn("REFRESH token 으로 요청 들어왔습니다.");
+				URI redirectUri = URI.create("http://localhost:8080/auth/reissue");
+				ServerHttpRequest modifiedRequest = exchange
+					.getRequest()
+					.mutate()
+					.uri(redirectUri)
+					.build();
+
+				ServerWebExchange modifiedExchange = exchange
+					.mutate()
+					.request(modifiedRequest)
+					.build();
+
+				return chain.filter(modifiedExchange);
+			}
 
 			if (!isJwtValid(token)) {
 				log.error("JWT is not valid");

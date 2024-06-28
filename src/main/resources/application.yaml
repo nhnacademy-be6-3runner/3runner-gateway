@@ -11,8 +11,6 @@ spring:
             lb://3RUNNER-AUTH
           predicates:
             - Path=/auth/**
-          filters:
-            - AuthorizationFilter
 
         - id: bookstore
           uri: lb://3RUNNER-BOOKSTORE
@@ -20,6 +18,7 @@ spring:
             - Path=/bookstore/**
           filters:
             - AuthorizationFilter
+
         - id: coupon
           uri: lb://3RUNNER-COUPON
           predicates:
@@ -40,6 +39,8 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
+        http://admin:1234@localhost:8761/eureka,http://admin:1234@localhost:8762/eureka
   instance:
     prefer-ip-address: true
+server:
+  port: 8080
