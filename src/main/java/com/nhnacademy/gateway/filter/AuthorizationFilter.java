@@ -1,13 +1,12 @@
 package com.nhnacademy.gateway.filter;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,8 +17,10 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.gateway.ErrorResponseForm;
 import com.nhnacademy.gateway.TokenDetails;
 import com.nhnacademy.gateway.jwt.JWTUtil;
+import com.nhnacademy.gateway.util.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,26 +73,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
 			String token = authorization.split(" ")[1];
 
-			if (jwtUtil.getCategory(token).equals("refresh")) {
-				log.warn("REFRESH token 으로 요청 들어왔습니다.");
-				URI redirectUri = URI.create("http://localhost:8080/auth/reissue");
-				ServerHttpRequest modifiedRequest = exchange
-					.getRequest()
-					.mutate()
-					.uri(redirectUri)
-					.build();
-
-				ServerWebExchange modifiedExchange = exchange
-					.mutate()
-					.request(modifiedRequest)
-					.build();
-
-				return chain.filter(modifiedExchange);
-			}
-
-			if (!isJwtValid(token)) {
+			if (jwtUtil.isExpired(token)) {
 				log.error("JWT is not valid");
-				return onError(exchange, "JWT가 유효하지 않다", HttpStatus.UNAUTHORIZED);
+				return onError(exchange, "토큰 만료", HttpStatus.UNAUTHORIZED);
 			}
 
 			// 넘어가는 요청에 대해 Member-Id Header 추가
@@ -124,34 +108,23 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
 		ServerHttpResponse response = exchange.getResponse();
 		response.setStatusCode(httpStatus);
-
-		return response.setComplete();
-	}
-
-	private Mono<Void> handleRedirect(ServerWebExchange exchange) {
-		// TODO main 페이지 구현 시 리다이렉트 url 변경
-		String redirectUrl = "http://login";
-
-		ServerHttpResponse response = exchange.getResponse();
-		response.setStatusCode(HttpStatus.FOUND);
-		response.getHeaders().setLocation(URI.create(redirectUrl));
-
-		return response.setComplete();
-	}
-
-
-	private boolean isJwtValid(String token) {
-		String uuid = jwtUtil.getUuid(token);
-
-		if (Objects.isNull(uuid) || uuid.isEmpty()) {
-			return false;
+		ApiResponse<ErrorResponseForm> resp = new ApiResponse<>(new ApiResponse.Header(false, HttpStatus.UNAUTHORIZED.value()),
+			new ApiResponse.Body<>(ErrorResponseForm.builder()
+				.title(err)
+				.status(httpStatus.value())
+				.timestamp(String.valueOf(System.currentTimeMillis()))
+				.build()));
+		byte[] bytes = new byte[0];
+		try {
+			bytes = objectMapper.writeValueAsBytes(resp);
+		} catch (JsonProcessingException e) {
+			log.error("Error writing response body", e);
 		}
 
-		if (jwtUtil.isExpired(token)) {
-			return false;
-		}
+		DataBuffer buffer = response.bufferFactory().wrap(bytes);
+		response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
 
-		return true;
+		return response.writeWith(Mono.just(buffer));
 	}
 
 }
