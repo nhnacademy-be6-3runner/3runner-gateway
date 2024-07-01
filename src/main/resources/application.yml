@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: 3runner-gateway
+  profiles:
+    default: prod
+
+logging:
+  level:
+    root: debug
+
+
+

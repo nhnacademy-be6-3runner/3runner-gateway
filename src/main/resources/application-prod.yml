@@ -33,14 +33,15 @@ spring:
 logging:
   level:
     root: debug
+  config:
+    activate:
+      on-profile: prod
 
 eureka:
   client:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@localhost:8761/eureka,http://admin:1234@localhost:8762/eureka
+        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
   instance:
     prefer-ip-address: true
-server:
-  port: 8080
