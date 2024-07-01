@@ -1,7 +1,9 @@
 spring:
   application:
     name: 3runner-gateway
-
+  config:
+    activate:
+      on-profile: prod
 logging:
   level:
     root: debug

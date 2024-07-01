@@ -35,10 +35,6 @@ spring:
       database: 15
       password: "*N2vya7H@muDTwdNMR!"
 
-  config:
-    activate:
-      on-profile: prod
-
 logging:
   level:
     root: debug
