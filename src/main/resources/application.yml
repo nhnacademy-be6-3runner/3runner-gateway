@@ -8,26 +8,7 @@ spring:
     default: prod
   jwt:
     secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
-  cloud:
-    gateway:
-      routes:
-        - id: auth
-          uri:
-            lb://3RUNNER-AUTH
-          predicates:
-            - Path=/auth/**
 
-        - id: bookstore
-          uri: lb://3RUNNER-BOOKSTORE
-          predicates:
-            - Path=/bookstore/**
-          filters:
-            - AuthorizationFilter
-
-        - id: coupon
-          uri: lb://3RUNNER-COUPON
-          predicates:
-            - Path=/coupon/**
   data:
     redis:
       host: 133.186.241.167
