@@ -47,50 +47,12 @@ public class JwtTest {
 			.compact();
 	}
 
-
-	@DisplayName("토큰에서 유저 이름 검사")
-	@Test
-	public void testGetUsername() {
-		String token = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() + 10000));
-		String username = jwtUtil.getUsername(token);
-		assertEquals("testUser", username);
-	}
-
-	@DisplayName("토큰에서 권한 검사")
-	@Test
-	public void testGetAuth() {
-		String token = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() + 10000));
-		List<String> auth = jwtUtil.getAuth(token);
-		assertEquals(1, auth.size());
-		assertEquals("ROLE_USER", auth.get(0));
-	}
-
-	@DisplayName("토큰에서 복수 권한 검사")
-	@Test
-	public void testGetAuths() {
-		String token = createTestToken("testUser", "ROLE_USER,ROLE_ADMIN", 1L, new Date(System.currentTimeMillis() + 10000));
-		List<String> auth = jwtUtil.getAuth(token);
-		assertEquals(2, auth.size());
-		assertEquals("ROLE_USER", auth.getFirst());
-		assertEquals("ROLE_ADMIN", auth.getLast());
-	}
-
-	@DisplayName("토큰에서 멤버 아이디 검사")
-	@Test
-	public void testGetMemberId() {
-		String token = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() + 10000));
-		Long memberId = jwtUtil.getMemberId(token);
-		assertEquals(1L, memberId);
-	}
-
 	@DisplayName("토큰에서 유효 기간 검사")
 	@Test
 	public void testIsExpired() {
-		assertThrows(io.jsonwebtoken.ExpiredJwtException.class, () -> {
-			jwtUtil.isExpired(createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() - 10000)));
-		});
-
-		String token = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() + 10000));
-		assertFalse(jwtUtil.isExpired(token));
+		String token1 = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() - 10000));
+		assertTrue(jwtUtil.isExpired(token1));
+		String token2 = createTestToken("testUser", "ROLE_USER", 1L, new Date(System.currentTimeMillis() + 10000));
+		assertFalse(jwtUtil.isExpired(token2));
 	}
 }

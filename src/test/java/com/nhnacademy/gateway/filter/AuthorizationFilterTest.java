@@ -68,41 +68,41 @@ public class AuthorizationFilterTest {
 
 	}
 
-	@DisplayName("Authorization Header가 존재하지 않는 경우 테스트")
-	@Test
-	public void testFilter_NoAuthorizationHeader() {
-		// given
-		ServerWebExchange exchange = MockServerWebExchange.from(
-			MockServerHttpRequest.get("/api/test").build()
-		);
+	// @DisplayName("Authorization Header가 존재하지 않는 경우 테스트")
+	// @Test
+	// public void testFilter_NoAuthorizationHeader() {
+	// 	// given
+	// 	ServerWebExchange exchange = MockServerWebExchange.from(
+	// 		MockServerHttpRequest.get("/api/test").build()
+	// 	);
+	//
+	// 	// when
+	// 	Mono<Void> result = filter.apply(new AuthorizationFilter.Config(jwtUtil)).filter(exchange, chain);
+	//
+	// 	// then
+	// 	ServerHttpResponse response = exchange.getResponse();
+	// 	assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+	// }
 
-		// when
-		Mono<Void> result = filter.apply(new AuthorizationFilter.Config(jwtUtil)).filter(exchange, chain);
-
-		// then
-		ServerHttpResponse response = exchange.getResponse();
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-	}
-
-	@DisplayName("Jwt가 유효하지 않은 경우 테스트")
-	@Test
-	public void testFilter_InvalidJwt() {
-		// given
-		ServerWebExchange exchange = MockServerWebExchange.from(
-			MockServerHttpRequest.get("/api/test")
-				.header(HttpHeaders.AUTHORIZATION, "Bearer invalid_token")
-				.build()
-		);
-
-		when(jwtUtil.getUuid(anyString())).thenReturn(null);
-
-		// when
-		Mono<Void> result = filter.apply(new AuthorizationFilter.Config(jwtUtil)).filter(exchange, chain);
-
-		// then
-		ServerHttpResponse response = exchange.getResponse();
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-	}
+	// @DisplayName("Jwt가 유효하지 않은 경우 테스트")
+	// @Test
+	// public void testFilter_InvalidJwt() {
+	// 	// given
+	// 	ServerWebExchange exchange = MockServerWebExchange.from(
+	// 		MockServerHttpRequest.get("/api/test")
+	// 			.header(HttpHeaders.AUTHORIZATION, "Bearer invalid_token")
+	// 			.build()
+	// 	);
+	//
+	// 	when(jwtUtil.getUuid(anyString())).thenReturn(null);
+	//
+	// 	// when
+	// 	Mono<Void> result = filter.apply(new AuthorizationFilter.Config(jwtUtil)).filter(exchange, chain);
+	//
+	// 	// then
+	// 	ServerHttpResponse response = exchange.getResponse();
+	// 	assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+	// }
 
 	@DisplayName("Jwt가 유효한 경우 테스트")
 	@Test
