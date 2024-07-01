@@ -1,41 +1,10 @@
 spring:
   application:
     name: 3runner-gateway
-  jwt:
-    secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
-  cloud:
-    gateway:
-      routes:
-        - id: auth
-          uri:
-            lb://3RUNNER-AUTH
-          predicates:
-            - Path=/auth/**
-
-        - id: bookstore
-          uri: lb://3RUNNER-BOOKSTORE
-          predicates:
-            - Path=/bookstore/**
-          filters:
-            - AuthorizationFilter
-
-        - id: coupon
-          uri: lb://3RUNNER-COUPON
-          predicates:
-            - Path=/coupon/**
-  data:
-    redis:
-      host: 133.186.241.167
-      port: 6379
-      database: 15
-      password: "*N2vya7H@muDTwdNMR!"
 
 logging:
   level:
     root: debug
-  config:
-    activate:
-      on-profile: prod
 
 eureka:
   client:
