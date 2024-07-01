@@ -2,7 +2,13 @@ spring:
   config:
     activate:
       on-profile: dev
-
+  cloud:
+    gateway:
+      routes:
+        - id: bookstore
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/**
 eureka:
   client:
     fetch-registry: true
