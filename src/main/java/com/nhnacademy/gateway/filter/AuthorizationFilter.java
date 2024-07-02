@@ -10,6 +10,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -63,7 +64,13 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 				log.warn("bookstore login api 요청");
 				return chain.filter(exchange);
 			}
-
+			if(request.getURI().getPath().startsWith("/bookstore/members/oauth")&& request.getMethod()== HttpMethod.POST){
+				log.warn("bookstore login/oauth api 요청");
+				return chain.filter(exchange);
+			}
+			if(request.getURI().getPath().startsWith("/bookstore/members")&& request.getMethod()== HttpMethod.POST){
+				return chain.filter(exchange);
+			}
 			if (!request.getHeaders().containsKey("Authorization")) {
 				log.error("Authorization header not present");
 				return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
