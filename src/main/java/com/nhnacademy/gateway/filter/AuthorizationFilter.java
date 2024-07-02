@@ -72,6 +72,10 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			if(request.getURI().getPath().startsWith("/bookstore/members")&& request.getMethod()== HttpMethod.POST){
 				return chain.filter(exchange);
 			}
+			if(request.getURI().getPath().startsWith("/bookstore/members/email")&&request.getMethod()==HttpMethod.GET){
+				return chain.filter(exchange);
+			}
+
 			if (!request.getHeaders().containsKey("Authorization")) {
 				log.error("Authorization header not present");
 				return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
