@@ -13,6 +13,11 @@ spring:
           predicates:
             - Path=/auth/**
 
+        - id: bookstore-image
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore/images/**
+
         - id: bookstore
           uri: lb://3RUNNER-BOOKSTORE
           predicates:

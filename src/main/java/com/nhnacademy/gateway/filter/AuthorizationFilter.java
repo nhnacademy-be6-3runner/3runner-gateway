@@ -42,7 +42,8 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	private ObjectMapper objectMapper;
 
 	@Autowired
-	public AuthorizationFilter(JWTUtil jwtUtil, @Qualifier("redisTemplate") RedisTemplate redisTemplate, ObjectMapper objectMapper) {
+	public AuthorizationFilter(JWTUtil jwtUtil, @Qualifier("redisTemplate") RedisTemplate redisTemplate,
+		ObjectMapper objectMapper) {
 		super(Config.class);
 		this.jwtUtil = jwtUtil;
 		this.redisTemplate = redisTemplate;
@@ -56,7 +57,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 	@Override
 	public GatewayFilter apply(AuthorizationFilter.Config config) {
-		return ((exchange, chain) -> {
+		return (exchange, chain) -> {
 			ServerHttpRequest request = exchange.getRequest();
 
 			// /bookstore/login 은 검증 제외
@@ -81,34 +82,37 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			// 넘어가는 요청에 대해 Member-Id Header 추가
 			String uuid = jwtUtil.getUuid(token);
 			String data = (String)redisTemplate.opsForHash().get(TOKEN_DETAILS, uuid);
-			TokenDetails tokenDetails = null;
+			TokenDetails tokenDetails;
 			try {
 				tokenDetails = objectMapper.readValue(data, TokenDetails.class);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException(e);
 			}
+
 			if (tokenDetails == null) {
-				System.out.println("TokenDetails not found in Redis for UUID: " + uuid);
+				log.warn("TokenDetails not found in Redis for UUID: {}", uuid);
+				return onError(exchange, "토큰 세부 정보 없음", HttpStatus.UNAUTHORIZED);
 			} else {
-				System.out.println("TokenDetails retrieved: " + tokenDetails.toString());
+				log.info("TokenDetails retrieved: {}", tokenDetails);
 			}
-			HttpHeaders headers = new HttpHeaders();
-			headers.addAll(request.getHeaders());
 
-			headers.remove(HttpHeaders.AUTHORIZATION);
-			headers.add("Member-Id", String.valueOf(tokenDetails.getMemberId()));
+			String userId = String.valueOf(tokenDetails.getMemberId());
 
+			// ServerHttpRequestDecorator를 사용하여 요청을 변조합니다.
 			ServerHttpRequest modifiedRequest = request.mutate()
-				.headers(httpHeaders -> httpHeaders.addAll(headers))
+				.header("Member-Id", userId)
 				.build();
-			return chain.filter(exchange.mutate().request(modifiedRequest).build());
-		});
+
+			ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
+			return chain.filter(modifiedExchange);
+		};
 	}
 
 	private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus httpStatus) {
 		ServerHttpResponse response = exchange.getResponse();
 		response.setStatusCode(httpStatus);
-		ApiResponse<ErrorResponseForm> resp = new ApiResponse<>(new ApiResponse.Header(false, HttpStatus.UNAUTHORIZED.value()),
+		ApiResponse<ErrorResponseForm> resp = new ApiResponse<>(
+			new ApiResponse.Header(false, HttpStatus.UNAUTHORIZED.value()),
 			new ApiResponse.Body<>(ErrorResponseForm.builder()
 				.title(err)
 				.status(httpStatus.value())
