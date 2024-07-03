@@ -62,13 +62,13 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 			// /bookstore/login 은 검증 제외
 			if (request.getURI().getPath().startsWith("/bookstore/login")) {
-				log.warn("bookstore login api 요청");
+				log.info("bookstore login api 요청");
 				return chain.filter(exchange);
 			}
 
 			if (!request.getHeaders().containsKey("Authorization")) {
-				log.error("Authorization header not present");
-				return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
+				log.info("비회원 요청");
+				return chain.filter(exchange);
 			}
 
 			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
@@ -97,10 +97,12 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			}
 
 			String userId = String.valueOf(tokenDetails.getMemberId());
+			String userAuth = String.valueOf(tokenDetails.getAuths());
 
 			// ServerHttpRequestDecorator를 사용하여 요청을 변조합니다.
 			ServerHttpRequest modifiedRequest = request.mutate()
 				.header("Member-Id", userId)
+				.header("Member-Auth", userAuth)
 				.build();
 
 			ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
