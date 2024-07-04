@@ -5,7 +5,7 @@ spring:
   application:
     name: 3runner-gateway
   profiles:
-    default: dev
+    default: prod
   cloud:
     gateway:
       routes:
