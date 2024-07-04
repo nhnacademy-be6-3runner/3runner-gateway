@@ -29,15 +29,15 @@ spring:
           uri: lb://3RUNNER-COUPON
           predicates:
             - Path=/coupon/**
+
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: 133.186.241.167
       port: 6379
       database: 15
-      password: ${REDIS_PASSWORD}
-
+      password: "*N2vya7H@muDTwdNMR!"
   jwt:
-    secret: ${JWT_SECRET}
+    secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
 
 
 logging:
