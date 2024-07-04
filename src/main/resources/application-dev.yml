@@ -2,38 +2,12 @@ spring:
   config:
     activate:
       on-profile: dev
-  cloud:
-    gateway:
-      routes:
-        - id: auth
-          uri:
-            lb://3RUNNER-AUTH
-          predicates:
-            - Path=/auth/**
 
-        - id: bookstore-image
-          uri: lb://3RUNNER-BOOKSTORE
-          predicates:
-            - Path=/bookstore/images/**
-
-        - id: bookstore
-          uri: lb://3RUNNER-BOOKSTORE
-          predicates:
-            - Path=/bookstore/**
-          filters:
-            - AuthorizationFilter
-
-        - id: coupon
-          uri: lb://3RUNNER-COUPON
-          predicates:
-            - Path=/coupon/**
 eureka:
   client:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@localhost:8761/eureka,http://admin:1234@localhost:8762/eureka
+        http://admin:1234@localhost:8761/eureka
   instance:
     prefer-ip-address: true
-
-

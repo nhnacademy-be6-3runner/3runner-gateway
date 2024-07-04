@@ -5,6 +5,32 @@ spring:
   application:
     name: 3runner-gateway
   profiles:
+    default: prod
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri:
+            lb://3RUNNER-AUTH
+          predicates:
+            - Path=/auth/**
+
+        - id: bookstore-image
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore/images/**
+
+        - id: bookstore
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore/**
+          filters:
+            - AuthorizationFilter
+
+        - id: coupon
+          uri: lb://3RUNNER-COUPON
+          predicates:
+            - Path=/coupon/**
     default: dev
   jwt:
     secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
