@@ -6,15 +6,6 @@ spring:
     name: 3runner-gateway
   profiles:
     default: prod
-  jwt:
-    secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
-
-  data:
-    redis:
-      host: 133.186.241.167
-      port: 6379
-      database: 15
-      password: "*N2vya7H@muDTwdNMR!"
 
 logging:
   level:

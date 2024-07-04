@@ -27,6 +27,16 @@ spring:
           uri: lb://3RUNNER-COUPON
           predicates:
             - Path=/coupon/**
+
+  data:
+    redis:
+      host: 133.186.241.167
+      port: 6379
+      database: 15
+      password: "*N2vya7H@muDTwdNMR!"
+  jwt:
+    secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
+
 eureka:
   client:
     fetch-registry: true

@@ -29,6 +29,17 @@ spring:
           uri: lb://3RUNNER-COUPON
           predicates:
             - Path=/coupon/**
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      database: 15
+      password: ${REDIS_PASSWORD}
+
+  jwt:
+    secret: ${JWT_SECRET}
+
+
 logging:
   level:
     root: debug
@@ -38,6 +49,6 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone:
-        http://admin:1234@eureka:8761/eureka,http://admin:1234@eureka:8762/eureka
+        http://admin:1234@eureka:8761/eureka
   instance:
     prefer-ip-address: true
