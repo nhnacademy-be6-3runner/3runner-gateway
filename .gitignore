@@ -4,10 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-
-### dev yml파일 삭제 ###
-/src/main/resources/application-dev.yml
-
 ### STS ###
 .apt_generated
 .classpath

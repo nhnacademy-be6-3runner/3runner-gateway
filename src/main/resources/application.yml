@@ -6,6 +6,40 @@ spring:
     name: 3runner-gateway
   profiles:
     default: dev
+  cloud:
+    gateway:
+      routes:
+        - id: auth
+          uri:
+            lb://3RUNNER-AUTH
+          predicates:
+            - Path=/auth/**
+
+        - id: bookstore-image
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore/images/**
+
+        - id: bookstore
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/bookstore/**
+          filters:
+            - AuthorizationFilter
+
+        - id: coupon
+          uri: lb://3RUNNER-COUPON
+          predicates:
+            - Path=/coupon/**
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      database: 15
+      password: ${REDIS_PASSWORD}
+
+  jwt:
+    secret: ${JWT_SECRET}
 
 logging:
   level:
