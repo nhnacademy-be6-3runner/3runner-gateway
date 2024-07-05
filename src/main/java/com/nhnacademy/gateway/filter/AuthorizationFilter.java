@@ -9,6 +9,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -60,14 +61,19 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			ServerHttpRequest request = exchange.getRequest();
 
 			// /bookstore/login 은 검증 제외
-			if (request.getURI().getPath().startsWith("/bookstore/login")) {
-				log.warn("bookstore login api 요청");
-				return chain.filter(exchange);
-			}
+			// if (request.getURI().getPath().startsWith("/bookstore/login")) {
+			// 	log.warn("bookstore login api 요청");
+			// 	return chain.filter(exchange);
+			// }
+			// if(request.getURI().getPath().startsWith("/bookstore/members/oauth")&& request.getMethod()== HttpMethod.POST){
+			// 	log.warn("bookstore login/oauth api 요청");
+			// 	return chain.filter(exchange);
+			// }
+
 
 			if (!request.getHeaders().containsKey("Authorization")) {
 				log.error("Authorization header not present");
-				return onError(exchange, "Authorization 헤더가 존재하지 않는다", HttpStatus.UNAUTHORIZED);
+				return chain.filter(exchange);
 			}
 
 			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
@@ -92,16 +98,17 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			} else {
 				System.out.println("TokenDetails retrieved: " + tokenDetails.toString());
 			}
-			HttpHeaders headers = new HttpHeaders();
-			headers.addAll(request.getHeaders());
+			String userId = String.valueOf(tokenDetails.getMemberId());
+			String userAuth = String.valueOf(tokenDetails.getAuths());
 
-			headers.remove(HttpHeaders.AUTHORIZATION);
-			headers.add("Member-Id", String.valueOf(tokenDetails.getMemberId()));
-
+			// ServerHttpRequestDecorator를 사용하여 요청을 변조합니다.
 			ServerHttpRequest modifiedRequest = request.mutate()
-				.headers(httpHeaders -> httpHeaders.addAll(headers))
+				.header("Member-Id", userId)
+				.header("Member-Auth", userAuth)
 				.build();
-			return chain.filter(exchange.mutate().request(modifiedRequest).build());
+
+			ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
+			return chain.filter(modifiedExchange);
 		});
 	}
 
