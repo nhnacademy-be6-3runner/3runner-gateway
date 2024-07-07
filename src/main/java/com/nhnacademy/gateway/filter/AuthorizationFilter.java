@@ -65,18 +65,20 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 				log.info("bookstore login api 요청");
 				return chain.filter(exchange);
 			}
+			String token;
+			if (request.getURI().getPath().startsWith("/bookstore/token")) {
 
-			if (!request.getHeaders().containsKey("Authorization")) {
+				token = request.getURI().toString().substring(44);
+			} else if (!request.getHeaders().containsKey("Authorization")) {
 				log.info("비회원 요청");
 				return chain.filter(exchange);
-			}
-
-			String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
-			String token = authorization.split(" ")[1];
-
-			if (jwtUtil.isExpired(token)) {
-				log.error("JWT is not valid");
-				return onError(exchange, "토큰 만료", HttpStatus.UNAUTHORIZED);
+			} else {
+				String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).getFirst();
+				token = authorization.split(" ")[1];
+				if (jwtUtil.isExpired(token)) {
+					log.error("JWT is not valid");
+					return onError(exchange, "토큰 만료", HttpStatus.UNAUTHORIZED);
+				}
 			}
 
 			// 넘어가는 요청에 대해 Member-Id Header 추가
