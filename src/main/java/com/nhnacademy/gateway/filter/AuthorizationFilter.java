@@ -68,7 +68,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			String token;
 			if (request.getURI().getPath().startsWith("/bookstore/token")) {
 
-				token = request.getURI().toString().substring(44);
+				String requestUrl = request.getURI().getPath();
+				String[] requestUrlSplit = requestUrl.split("/");
+				token = requestUrlSplit[requestUrlSplit.length - 1];
 			} else if (!request.getHeaders().containsKey("Authorization")) {
 				log.info("비회원 요청");
 				return chain.filter(exchange);
