@@ -30,7 +30,7 @@ spring:
             - AuthorizationFilter
           metadata:
             cors:
-              allowedOrigins: 'http://3runner.shop'
+              allowedOrigins: '*'
               allowedMethods:
                 - GET
                 - POST
