@@ -7,7 +7,7 @@ spring:
   application:
     name: 3runner-gateway
   profiles:
-    default: dev
+    default: prod
   cloud:
     gateway:
       routes:
@@ -30,7 +30,7 @@ spring:
             - AuthorizationFilter
           metadata:
             cors:
-              allowedOrigins: '*'
+              allowedOrigins: 'http://3runner.shop'
               allowedMethods:
                 - GET
                 - POST
