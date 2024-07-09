@@ -2,10 +2,12 @@ server:
   port: 8080
 
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: 3runner-gateway
   profiles:
-    default: prod
+    default: dev
   cloud:
     gateway:
       routes:
@@ -26,6 +28,17 @@ spring:
             - Path=/bookstore/**
           filters:
             - AuthorizationFilter
+          metadata:
+            cors:
+              allowedOrigins: '*'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTION
+              allowedHeaders: '*'
+              maxAge: 30
 
         - id: coupon
           uri: lb://3RUNNER-COUPON
