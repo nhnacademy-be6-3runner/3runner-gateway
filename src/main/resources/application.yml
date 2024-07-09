@@ -23,7 +23,6 @@ spring:
               - OPTIONS
             allowedHeaders:
               - "*"
-            allowCredentials: true
             maxAge: 3600
       routes:
         - id: auth
