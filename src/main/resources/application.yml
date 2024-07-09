@@ -14,7 +14,7 @@ spring:
         corsConfigurations:
           '[/**]':
             allowedOrigins:
-              - "http://3runner.shop"
+              - "*"
             allowedMethods:
               - GET
               - POST
@@ -43,17 +43,6 @@ spring:
             - Path=/bookstore/**
           filters:
             - AuthorizationFilter
-#          metadata:
-#            cors:
-#              allowedOrigins: '*'
-#              allowedMethods:
-#                - GET
-#                - POST
-#                - PUT
-#                - DELETE
-#                - OPTION
-#              allowedHeaders: '*'
-#              maxAge: 30
 
         - id: coupon
           uri: lb://3RUNNER-COUPON
