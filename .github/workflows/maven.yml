@@ -62,4 +62,4 @@ jobs:
             if sudo docker service ls | grep -q 'gateway'; then
               sudo docker service rm gateway
             fi
-            sudo docker service create --name gateway --publish 8080:8080 --network front_network_swarm --network back_network_swarm gateway
+            sudo docker service create --name gateway --publish 8080:8080 --network front_network_swarm --network back_network_swarm gateway-image
