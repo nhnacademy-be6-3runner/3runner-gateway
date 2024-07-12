@@ -2,9 +2,7 @@ name: Java CI with Maven, SonarQube, and Docker
 
 on:
   push:
-    branches: [ "main", "develop", "develop2"]
-  pull_request:
-    branches: [ "main", "develop", "develop2"]
+    branches: [ "main" ]
 
 jobs:
   build:
