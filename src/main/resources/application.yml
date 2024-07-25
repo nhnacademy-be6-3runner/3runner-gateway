@@ -7,7 +7,7 @@ spring:
   application:
     name: 3runner-gateway
   profiles:
-    default: prod
+    default: dev
   cloud:
     gateway:
       globalcors:
@@ -46,6 +46,11 @@ spring:
           uri: lb://3RUNNER-COUPON
           predicates:
             - Path=/coupon/**
+
+        - id: prometheus
+          uri: lb://3RUNNER-BOOKSTORE
+          predicates:
+            - Path=/actuator/**
   jwt:
     secret: aaaasqwlkljlfasdfqwerafcxvzpojijoijopjewndllllllsserrrrrrwqexc
 
