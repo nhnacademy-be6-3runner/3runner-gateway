@@ -1,9 +1,5 @@
 package com.nhnacademy.gateway.filter;
 
-import java.util.Objects;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -17,8 +13,8 @@ import org.springframework.web.server.ServerWebExchange;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.gateway.ErrorResponseForm;
-import com.nhnacademy.gateway.TokenDetails;
+import com.nhnacademy.gateway.util.ErrorResponseForm;
+import com.nhnacademy.gateway.util.TokenDetails;
 import com.nhnacademy.gateway.jwt.JWTUtil;
 import com.nhnacademy.gateway.util.ApiResponse;
 
@@ -37,13 +33,11 @@ import reactor.core.publisher.Mono;
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
 	private final String TOKEN_DETAILS = "token_details";
 
-	private final RedisTemplate<String, Objects> redisTemplate;
-	private JWTUtil jwtUtil;
-	private ObjectMapper objectMapper;
+	private final RedisTemplate<String, Object> redisTemplate;
+	private final JWTUtil jwtUtil;
+	private final ObjectMapper objectMapper;
 
-	@Autowired
-	public AuthorizationFilter(JWTUtil jwtUtil, @Qualifier("redisTemplate") RedisTemplate redisTemplate,
-		ObjectMapper objectMapper) {
+	public AuthorizationFilter(JWTUtil jwtUtil, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
 		super(Config.class);
 		this.jwtUtil = jwtUtil;
 		this.redisTemplate = redisTemplate;

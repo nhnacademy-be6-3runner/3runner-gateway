@@ -11,7 +11,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-
 public class ApiResponse<T> {
 	private Header header;
 

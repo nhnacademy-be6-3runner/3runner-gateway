@@ -1,4 +1,4 @@
-package com.nhnacademy.gateway;
+package com.nhnacademy.gateway.util;
 
 import java.io.Serializable;
 import java.util.List;
